@@ -106,30 +106,29 @@ async function sendMsg() {
   const text = document.getElementById("msg").value.trim();
   if (!text) return;
 
-  // Display the user's message
+  // show user message
   chat.innerHTML += `<div class="msg user">${text}</div>`;
   document.getElementById("msg").value = "";
   chat.scrollTop = chat.scrollHeight;
 
-  // 🔮 ADD THIS — generate or reuse a session ID
+  // 🔮 maintain persistent session id
   const sessionId = localStorage.getItem("sessionId") || crypto.randomUUID();
   localStorage.setItem("sessionId", sessionId);
 
   try {
-    // ✅ Include sessionId in the POST body
+    // ✅ always use production webhook
     const res = await fetch(webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ question: text, sessionId })
     });
 
-    const data = await res.json();
+    // use .text() instead of .json() to handle HTML output safely
+    const textResponse = await res.text();
 
-    // Display the bot’s response
-    if (data.html) {
-      chat.innerHTML += `<div class="msg">${data.html}</div>`;
-    } else if (data.text) {
-      chat.innerHTML += `<div class="msg">${data.text}</div>`;
+    // if n8n sends HTML, display as-is
+    if (textResponse && textResponse.trim() !== "") {
+      chat.innerHTML += `<div class="msg">${textResponse}</div>`;
     } else {
       chat.innerHTML += `<div class="msg">(No response received)</div>`;
     }
