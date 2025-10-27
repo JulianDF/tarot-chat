@@ -99,26 +99,33 @@
   </div>
 
 <script>
-const webhook = "https://n8n-1-114-4-docker-image.onrender.com/webhook/215a5864-e2fa-434a-85b8-45444520da6e"; // ← replace with your real n8n webhook URL
+const webhook = "https://n8n-1-114-4-docker-image.onrender.com/webhook/215a5864-e2fa-434a-85b8-45444520da6e"; 
 const chat = document.getElementById("chat");
 
 async function sendMsg() {
   const text = document.getElementById("msg").value.trim();
   if (!text) return;
+
+  // Display the user's message
   chat.innerHTML += `<div class="msg user">${text}</div>`;
   document.getElementById("msg").value = "";
-
   chat.scrollTop = chat.scrollHeight;
 
+  // 🔮 ADD THIS — generate or reuse a session ID
+  const sessionId = localStorage.getItem("sessionId") || crypto.randomUUID();
+  localStorage.setItem("sessionId", sessionId);
+
   try {
+    // ✅ Include sessionId in the POST body
     const res = await fetch(webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: text })
+      body: JSON.stringify({ question: text, sessionId })
     });
+
     const data = await res.json();
 
-    // Safely display returned HTML
+    // Display the bot’s response
     if (data.html) {
       chat.innerHTML += `<div class="msg">${data.html}</div>`;
     } else if (data.text) {
