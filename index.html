@@ -36,6 +36,38 @@
     background: rgba(30,30,30,0.8);
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
   }
+
+  /* === Fix agent HTML inside the chat container === */
+#chat .wrap,
+#chat body {
+  background: transparent !important;
+  color: #e0e0e0 !important;
+}
+
+/* Fix the “Bottom line” white box */
+#chat .summary {
+  background: rgba(255, 255, 255, 0.05) !important; /* subtle dark tint */
+  border: 1px solid #444 !important;
+  color: #f0f0f0 !important;
+}
+
+/* Fix grayed-out note text */
+#chat .note {
+  color: #b0b0b0 !important;   /* readable on dark background */
+  opacity: 1 !important;
+}
+
+/* Ensure headings inside agent HTML match your theme */
+#chat h1, #chat h2, #chat h3, #chat strong {
+  color: #d5b97f !important;   /* your golden accent */
+}
+
+/* Optional: remove redundant white body background if nested <html> appears */
+#chat html, 
+#chat body {
+  background: transparent !important;
+}
+
   
   /* make the agent HTML fit your dark theme */
 #chat .summary {
