@@ -40,12 +40,26 @@
   .msg {
     margin: .75em 0;
     line-height: 1.4;
+    color: #f0f0f0;
+    padding: 0.5em 0.75em;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
   }
 
   .user {
     text-align: right;
     color: #8faaff;
+    background: rgba(140,170,255,0.1);
   }
+
+  .msg:not(.user) {
+  text-align: left;
+  color: #e8e8e8;
+}
+
+#msg {
+  text-align: left;
+}
 
   #inputBox {
     display: flex;
