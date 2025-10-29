@@ -1,15 +1,13 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static("public"));
 
-// 🔮 memory store for active clients
 const clients = new Map();
 
-// browser opens connection
 app.get("/events/:sessionId", (req, res) => {
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache");
@@ -17,16 +15,11 @@ app.get("/events/:sessionId", (req, res) => {
 
   const id = req.params.sessionId;
   clients.set(id, res);
-
-  // send initial ping
   res.write(`data: {"status":"connected"}\n\n`);
 
-  req.on("close", () => {
-    clients.delete(id);
-  });
+  req.on("close", () => clients.delete(id));
 });
 
-// n8n pushes message here
 app.post("/push", (req, res) => {
   const { sessionId, text } = req.body;
   const client = clients.get(sessionId);
@@ -38,6 +31,4 @@ app.post("/push", (req, res) => {
   }
 });
 
-// 🚀 listen on Render-assigned port
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`✨ Tarot Stream server running on port ${PORT}`));
+app.listen(3000, () => console.log("✨ Tarot stream server running on port 3000"));
