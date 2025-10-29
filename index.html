@@ -171,44 +171,38 @@
   </div>
 
 <script>
-const webhook = "https://n8n-1-114-4-docker-image.onrender.com/webhook/tarot-chat"; 
-const chat = document.getElementById("chat");
-const msgInput = document.getElementById("msg");
+const streamBase = "https://tarot-chat.onrender.com"; // your deployed app URL
 
-msgInput.addEventListener("keydown", function (e) {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault(); // stop newline
-    sendMsg();
-  }
-  // Shift+Enter inserts a newline by default
-});
+function connectStream(sessionId) {
+  const source = new EventSource(`${streamBase}/events/${sessionId}`);
+  source.onmessage = (event) => {
+    const data = JSON.parse(event.data);
+    if (data.text) {
+      chat.innerHTML += `<div class="msg">${data.text}</div>`;
+      chat.scrollTop = chat.scrollHeight;
+    }
+  };
+}
 
 async function sendMsg() {
   const text = msgInput.value.trim();
   if (!text) return;
 
-  chat.innerHTML += `<div class="msg user">${text.replace(/\n/g, "<br>")}</div>`;
-  msgInput.value = "";
-  chat.scrollTop = chat.scrollHeight;
-
   const sessionId = localStorage.getItem("sessionId") || crypto.randomUUID();
   localStorage.setItem("sessionId", sessionId);
 
-  try {
-    const res = await fetch(webhook, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ question: text, sessionId })
-    });
+  connectStream(sessionId);
 
-    const textResponse = await res.text();
-    chat.innerHTML += `<div class="msg">${textResponse.trim() || "(No response received)"}</div>`;
-  } catch (err) {
-    chat.innerHTML += `<div class="msg">⚠️ Error: ${err.message}</div>`;
-  }
+  chat.innerHTML += `<div class="msg user">${text}</div>`;
+  msgInput.value = "";
 
-  chat.scrollTop = chat.scrollHeight;
+  await fetch("https://n8n-1-114-4-docker-image.onrender.com/webhook/tarot-chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question: text, sessionId }),
+  });
 }
+
 </script>
 </body>
 </html>
