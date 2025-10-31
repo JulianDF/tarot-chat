@@ -171,6 +171,14 @@
   </div>
 
 <script>
+const msgInput = document.getElementById("msg");
+  msgInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    sendMsg();
+  }
+});
+
 const streamBase = "https://tarot-chat.onrender.com"; // your deployed app URL
 
 function connectStream(sessionId) {
