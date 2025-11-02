@@ -36,15 +36,15 @@ app.post("/push", (req, res) => {
   const client = clients.get(sessionId);
 
   if (client) {
-    console.log("✅ Found active client, sending update...");
+    // Send the text chunk as an SSE message
     client.write(`data: ${JSON.stringify({ text })}\n\n`);
-    res.json({ data: "OK" });
+    console.log("✅ Sent update to client", sessionId);
+    res.send("OK");
   } else {
-    console.warn("⚠️ No active client for sessionId:", sessionId);
-    res.status(404).json({ error: "No active client" });
+    console.warn("⚠️ No active SSE client for session:", sessionId);
+    res.status(404).send("No active client");
   }
 });
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () =>
