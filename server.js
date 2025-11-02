@@ -46,6 +46,22 @@ app.post("/push", (req, res) => {
   }
 });
 
+app.post("/webhook/tarot-chat", async (req, res) => {
+  try {
+    const response = await fetch("https://n8n-1-114-4-docker-image.onrender.com/webhook/tarot-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+
+    const text = await response.text();
+    res.status(response.status).send(text);
+  } catch (err) {
+    console.error("❌ Error proxying to n8n:", err);
+    res.status(500).send("Proxy error");
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () =>
   console.log(`✨ Tarot stream server running on port ${PORT}`)
