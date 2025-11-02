@@ -224,12 +224,14 @@
 <script>
 const chat = document.getElementById("chat");
 const msgInput = document.getElementById("msg");
-const streamBase = "https://tarot-chat.onrender.com";
+// const streamBase = "https://tarot-chat.onrender.com";
 let source;
 
-function connectStream(sessionId) {
+const serverBase = window.location.origin;
+
+  function connectStream(sessionId) {
   if (source) return; // already connected
-  source = new EventSource(`${streamBase}/events/${sessionId}`);
+  const source = new EventSource(`${serverBase}/events/${sessionId}`);
 
   source.onmessage = (event) => {
     if (!event.data) return;
@@ -260,7 +262,7 @@ async function sendMsg() {
   chat.innerHTML += `<div class="msg user">${text}</div>`;
   msgInput.value = "";
 
-  await fetch("https://n8n-1-114-4-docker-image.onrender.com/webhook/tarot-chat", {
+  await fetch("/webhook/tarot-chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question: text, sessionId }),
