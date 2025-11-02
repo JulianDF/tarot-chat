@@ -159,6 +159,57 @@
   a {
     color: #d5b97f;
   }
+
+/* Normalize any injected or agent HTML */
+.agent-content,
+.agent-content * {
+  /* inherit structure, but make sure text is readable */
+  color: #e0e0e0 !important;
+  background: transparent !important;
+  font-family: inherit !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+
+/* Headings / emphasis */
+.agent-content h1,
+.agent-content h2,
+.agent-content h3,
+.agent-content strong {
+  color: #ffd97a !important;
+}
+
+/* Links */
+.agent-content a {
+  color: #a8d5ff !important;
+  text-decoration: underline;
+  text-decoration-color: rgba(168,213,255,0.6);
+}
+.agent-content a:hover {
+  color: #d5b97f !important;
+}
+
+/* Blocks and cards */
+.agent-content .card,
+.agent-content blockquote,
+.agent-content pre,
+.agent-content code {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 8px !important;
+  padding: 0.75em !important;
+  color: #fff8e1 !important;
+}
+
+/* Layout helpers (so spreads/grids stay visible) */
+.agent-content .spread,
+.agent-content .grid,
+.agent-content .layout {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+
 </style>
 </head>
 <body>
@@ -185,8 +236,11 @@ function connectStream(sessionId) {
     const data = JSON.parse(event.data);
     if (data.status === "connected") return;
     if (data.text) {
-      chat.innerHTML += `<div class="msg">${data.text}</div>`;
-      chat.scrollTop = chat.scrollHeight;
+      const agentBlock = document.createElement("div");
+agentBlock.className = "agent-content";
+agentBlock.innerHTML = data.text;
+chat.appendChild(agentBlock);
+chat.scrollTop = chat.scrollHeight;
     }
   };
 
@@ -212,6 +266,15 @@ async function sendMsg() {
     body: JSON.stringify({ question: text, sessionId }),
   });
 }
+
+// Allow Enter to send, Shift+Enter for newline
+msgInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault(); // stop it from making a new line
+    sendMsg(); // send the message
+  }
+});
+
   
   function newReading() {
   // Clear the chat visually
