@@ -212,6 +212,22 @@ async function sendMsg() {
     body: JSON.stringify({ question: text, sessionId }),
   });
 }
+  
+  function newReading() {
+  // Clear the chat visually
+  chat.innerHTML = "";
+
+  // Generate a new session ID so the new reading starts fresh
+  const newSessionId = crypto.randomUUID();
+  localStorage.setItem("sessionId", newSessionId);
+
+  // Reconnect the stream for the new session
+  connectStream(newSessionId);
+
+  // Optionally, add a system message
+  chat.innerHTML += `<div class="msg"><em>✨ New reading started. Ask your next question.</em></div>`;
+}
+
 </script>
 
 </body>
