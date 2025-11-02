@@ -28,14 +28,23 @@ app.get("/events/:sessionId", (req, res) => {
 
 app.post("/push", (req, res) => {
   const { sessionId, text } = req.body;
+
+  console.log("📨 Received push from n8n");
+  console.log("sessionId:", sessionId);
+  console.log("text preview:", text?.slice?.(0, 80));
+
   const client = clients.get(sessionId);
+
   if (client) {
+    console.log("✅ Found active client, sending update...");
     client.write(`data: ${JSON.stringify({ text })}\n\n`);
-    res.send("OK");
+    res.json({ data: "OK" });
   } else {
-    res.status(404).send("No active client");
+    console.warn("⚠️ No active client for sessionId:", sessionId);
+    res.status(404).json({ error: "No active client" });
   }
 });
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, "0.0.0.0", () =>
