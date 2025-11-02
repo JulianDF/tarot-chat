@@ -171,35 +171,37 @@
   </div>
 
 <script>
+const chat = document.getElementById("chat");
 const msgInput = document.getElementById("msg");
-  msgInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter" && !e.shiftKey) {
-    e.preventDefault();
-    sendMsg();
-  }
-});
-
-const streamBase = "https://tarot-chat.onrender.com"; // your deployed app URL
+const streamBase = "https://tarot-chat.onrender.com";
+let source;
 
 function connectStream(sessionId) {
-  const source = new EventSource(`${streamBase}/events/${sessionId}`);
+  if (source) return; // already connected
+  source = new EventSource(`${streamBase}/events/${sessionId}`);
+
   source.onmessage = (event) => {
+    if (!event.data) return;
     const data = JSON.parse(event.data);
+    if (data.status === "connected") return;
     if (data.text) {
       chat.innerHTML += `<div class="msg">${data.text}</div>`;
       chat.scrollTop = chat.scrollHeight;
     }
   };
+
+  source.onerror = (err) => console.error("SSE error", err);
+  window.addEventListener("beforeunload", () => source?.close());
 }
+
+// create/reuse session + connect ONCE at load
+const sessionId = localStorage.getItem("sessionId") || crypto.randomUUID();
+localStorage.setItem("sessionId", sessionId);
+connectStream(sessionId);
 
 async function sendMsg() {
   const text = msgInput.value.trim();
   if (!text) return;
-
-  const sessionId = localStorage.getItem("sessionId") || crypto.randomUUID();
-  localStorage.setItem("sessionId", sessionId);
-
-  connectStream(sessionId);
 
   chat.innerHTML += `<div class="msg user">${text}</div>`;
   msgInput.value = "";
@@ -210,7 +212,7 @@ async function sendMsg() {
     body: JSON.stringify({ question: text, sessionId }),
   });
 }
-
 </script>
+
 </body>
 </html>
