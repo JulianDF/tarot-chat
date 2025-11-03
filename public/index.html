@@ -62,11 +62,6 @@
   color: #d5b97f !important;   /* your golden accent */
 }
 
-/* Optional: remove redundant white body background if nested <html> appears */
-#chat html, 
-#chat body {
-  background: transparent !important;
-}
 
   
   /* make the agent HTML fit your dark theme */
@@ -160,14 +155,15 @@
     color: #d5b97f;
   }
 
-/* Normalize any injected or agent HTML */
-.agent-content,
+  /* Light normalization for agent HTML — keep its layout and transforms intact */
+.agent-content {
+  color: #e0e0e0;
+  background: transparent;
+  font-family: inherit;
+}
+
 .agent-content * {
-  /* inherit structure, but make sure text is readable */
-  color: #e0e0e0 !important;
-  background: transparent !important;
-  font-family: inherit !important;
-  border-color: rgba(255,255,255,0.15) !important;
+  color: inherit !important;
 }
 
 /* Headings / emphasis */
@@ -200,14 +196,17 @@
   color: #fff8e1 !important;
 }
 
-/* Layout helpers (so spreads/grids stay visible) */
-.agent-content .spread,
-.agent-content .grid,
-.agent-content .layout {
+
+  /* Allow agent-defined grid layouts (like the 6-card spread) to render as intended */
+.agent-content .grid {
   display: grid !important;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
-  gap: 1rem !important;
+  grid-template-columns: repeat(3, 160px) !important;
+  grid-template-rows: repeat(2, auto) !important;
+  gap: 14px 18px !important;
+  justify-content: center !important;
 }
+
+  
 
 /* === Layout improvements === */
 
