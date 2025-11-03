@@ -230,8 +230,8 @@ let source;
 const serverBase = window.location.origin;
 
   function connectStream(sessionId) {
-  if (source) return; // already connected
-  const source = new EventSource(`${serverBase}/events/${sessionId}`);
+  if (source) source.close(); // ✅ close previous connection before opening new
+  source = new EventSource(`${serverBase}/events/${sessionId}`); // ✅ no “const” here
 
   source.onmessage = (event) => {
     if (!event.data) return;
