@@ -6,6 +6,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const clients = new Map();
+
 // define API routes first
 app.post("/push", (req, res) => {
   const { sessionId, text } = req.body;
