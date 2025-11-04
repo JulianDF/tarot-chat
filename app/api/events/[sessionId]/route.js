@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { getClientsMap } from "../../push/route.js";
 
 export async function GET(request, { params }) {
