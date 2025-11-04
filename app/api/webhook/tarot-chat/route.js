@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 export async function POST(req) {
   const body = await req.json();
 
