@@ -103,6 +103,8 @@ export default function TarotApp() {
   const handleSendMessage = async (question: string) => {
     if (!question.trim() || !sessionId) return
 
+    console.log("[v0] Sending message to n8n with sessionId:", sessionId)
+
     const userMessageId = uuidv4()
     setChatMessages((prev) => [
       ...prev,
@@ -125,6 +127,8 @@ export default function TarotApp() {
           },
         }),
       })
+
+      console.log("[v0] n8n response status:", response.status)
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`)

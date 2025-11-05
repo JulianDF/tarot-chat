@@ -14,6 +14,18 @@ export async function GET(
 
     const messages = messagesStore.get(sessionId) || []
 
+    console.log(`[v0 GET] Retrieving messages for session ${sessionId}:`, {
+      messageCount: messages.length,
+      allSessionIds: Array.from(messagesStore.keys()),
+      messages: messages.map((m) => ({
+        id: m.id,
+        hasText: !!m.text,
+        hasSpread: !!m.spread_html,
+        textLength: m.text?.length || 0,
+        spreadLength: m.spread_html?.length || 0,
+      })),
+    })
+
     return Response.json({ messages })
   } catch (error) {
     console.error("[v0] Error in messages endpoint:", error)
@@ -25,26 +37,70 @@ export function addMessage(sessionId: string, message: { text?: string; spread_h
   const messages = messagesStore.get(sessionId) || []
   const now = Date.now()
 
-  // Check if there's a recent message (within last 5 seconds) that we should merge with
-  const recentMessage = messages.length > 0 ? messages[messages.length - 1] : null
-  const shouldMerge = recentMessage && now - recentMessage.timestamp < 5000
+  console.log("\n" + "=".repeat(80))
+  console.log(`[v0 addMessage] 🔔 NEW MESSAGE ARRIVING`)
+  console.log("=".repeat(80))
+  console.log(`Session: ${sessionId}`)
+  console.log(
+    `Adding: ${message.text ? "TEXT" : ""}${message.text && message.spread_html ? " + " : ""}${message.spread_html ? "SPREAD_HTML" : ""}`,
+  )
+  console.log(`Current message count: ${messages.length}`)
 
-  if (shouldMerge) {
-    // Merge new data into existing message
-    console.log(`[v0] Merging message for session ${sessionId}`)
-    if (message.text) recentMessage.text = message.text
-    if (message.spread_html) recentMessage.spread_html = message.spread_html
-    recentMessage.timestamp = now
-
-    console.log(`[v0] Merged message:`, {
-      id: recentMessage.id,
-      hasText: !!recentMessage.text,
-      hasSpread: !!recentMessage.spread_html,
-      textLength: recentMessage.text?.length || 0,
-      spreadLength: recentMessage.spread_html?.length || 0,
+  if (messages.length > 0) {
+    console.log(`\nExisting messages:`)
+    messages.forEach((m, i) => {
+      console.log(`  [${i}] id: ${m.id}, hasText: ${!!m.text}, hasSpread: ${!!m.spread_html}`)
     })
+  }
+
+  const recentMessage = messages.length > 0 ? messages[messages.length - 1] : null
+
+  if (recentMessage) {
+    console.log(`\n📋 Most recent message:`)
+    console.log(`  id: ${recentMessage.id}`)
+    console.log(`  hasText: ${!!recentMessage.text}`)
+    console.log(`  hasSpread: ${!!recentMessage.spread_html}`)
   } else {
-    // Create new message
+    console.log(`\n📋 No recent message found`)
+  }
+
+  const canMerge =
+    recentMessage && ((message.text && !recentMessage.text) || (message.spread_html && !recentMessage.spread_html))
+
+  console.log(`\n🔀 Merge decision: ${canMerge ? "✅ MERGE" : "❌ CREATE NEW"}`)
+  if (recentMessage) {
+    console.log(`  Reason:`)
+    if (message.text && !recentMessage.text) {
+      console.log(`    ✓ Adding TEXT to message that has NO text`)
+    }
+    if (message.spread_html && !recentMessage.spread_html) {
+      console.log(`    ✓ Adding SPREAD to message that has NO spread`)
+    }
+    if (message.text && recentMessage.text) {
+      console.log(`    ✗ Recent message already has TEXT`)
+    }
+    if (message.spread_html && recentMessage.spread_html) {
+      console.log(`    ✗ Recent message already has SPREAD`)
+    }
+  }
+
+  if (canMerge) {
+    console.log(`\n🔗 MERGING into existing message ${recentMessage!.id}`)
+    if (message.text) {
+      console.log(`  Adding TEXT (${message.text.length} chars)`)
+      recentMessage!.text = message.text
+    }
+    if (message.spread_html) {
+      console.log(`  Adding SPREAD_HTML (${message.spread_html.length} chars)`)
+      recentMessage!.spread_html = message.spread_html
+    }
+    recentMessage!.timestamp = now
+
+    console.log(`\n✅ Merged result:`)
+    console.log(`  id: ${recentMessage!.id}`)
+    console.log(`  hasText: ${!!recentMessage!.text}`)
+    console.log(`  hasSpread: ${!!recentMessage!.spread_html}`)
+  } else {
     const newMessage = {
       id: `${now}-${Math.random()}`,
       ...message,
@@ -52,16 +108,20 @@ export function addMessage(sessionId: string, message: { text?: string; spread_h
     }
     messages.push(newMessage)
 
-    console.log(`[v0] Created new message for session ${sessionId}:`, {
-      id: newMessage.id,
-      hasText: !!newMessage.text,
-      hasSpread: !!newMessage.spread_html,
-      textLength: newMessage.text?.length || 0,
-      spreadLength: newMessage.spread_html?.length || 0,
-    })
+    console.log(`\n➕ CREATED new message:`)
+    console.log(`  id: ${newMessage.id}`)
+    console.log(`  hasText: ${!!newMessage.text}`)
+    console.log(`  hasSpread: ${!!newMessage.spread_html}`)
   }
 
   messagesStore.set(sessionId, messages)
+
+  console.log(`\n📊 Final state for session ${sessionId}:`)
+  console.log(`  Total messages: ${messages.length}`)
+  messages.forEach((m, i) => {
+    console.log(`  [${i}] id: ${m.id}, hasText: ${!!m.text}, hasSpread: ${!!m.spread_html}`)
+  })
+  console.log("=".repeat(80) + "\n")
 
   // Clean up old messages (keep last 100)
   if (messages.length > 100) {
