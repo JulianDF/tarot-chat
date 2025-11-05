@@ -56,12 +56,21 @@ export default function SpreadViewer({ spreadHtml, sessionId }: SpreadViewerProp
       {/* Spread Content */}
       <div className="flex-1 overflow-y-auto px-6 py-6">
         {!spreadHtml ? (
-          <div className="h-full flex flex-col items-center justify-center text-center">
-            <div className="p-4 rounded-full bg-primary/5 border border-primary/20 mb-4">
-              <Sparkles className="w-8 h-8 text-primary/50" />
+          <div className="h-full flex flex-col items-center justify-center text-center relative">
+            <div className="absolute inset-0 flex items-center justify-center opacity-40 brightness-125">
+              <img
+                src="/tarot-card-deck-stack-mystical.jpg"
+                alt="Tarot deck placeholder"
+                className="max-w-xs object-contain"
+              />
             </div>
-            <h3 className="text-lg font-serif text-muted-foreground mb-2">No spread yet</h3>
-            <p className="text-sm text-muted-foreground">Ask a question to receive your reading</p>
+            <div className="relative z-10">
+              <div className="p-4 rounded-full bg-primary/5 border border-primary/20 mb-4">
+                <Sparkles className="w-8 h-8 text-primary/50" />
+              </div>
+              <h3 className="text-lg font-serif text-muted-foreground mb-2">No spread yet</h3>
+              <p className="text-sm text-muted-foreground">Ask a question to receive your reading</p>
+            </div>
           </div>
         ) : (
           <div className="animate-fade-in">
