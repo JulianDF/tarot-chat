@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const params = await Promise.resolve(context.params)
-    const { sessionId } = params
+    const sessionId = params.sessionId.trim()
 
     const messages = messagesStore.get(sessionId) || []
 

@@ -19,6 +19,10 @@ export async function POST(request: Request) {
 
     let { sessionId, text, spread_html } = body
 
+    if (sessionId) {
+      sessionId = sessionId.trim()
+    }
+
     console.log("[v0 Server] 🔑 SESSION ID:", sessionId || "❌ MISSING!")
 
     if (!spread_html && body.spreadHtml) {
