@@ -52,7 +52,6 @@ export default function SpreadViewer({ spreads, currentIndex, onPrevious, onNext
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
       <div className="border-b border-border bg-card/40 backdrop-blur-sm px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -61,59 +60,57 @@ export default function SpreadViewer({ spreads, currentIndex, onPrevious, onNext
             </div>
             <div>
               <h2 className="text-lg font-serif font-semibold">Reading Spread</h2>
-              <p className="text-sm text-muted-foreground">
-                {spreads.length > 0
-                  ? `${currentIndex + 1} of ${spreads.length} ${spreads.length === 1 ? "reading" : "readings"}`
-                  : "Card layout & interpretation"}
-              </p>
+              <p className="text-sm text-muted-foreground">Card layout & interpretation</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            {spreads.length > 1 && (
-              <>
-                <Button
-                  onClick={onPrevious}
-                  disabled={currentIndex === 0}
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 bg-transparent"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Prev
-                </Button>
-                <Button
-                  onClick={onNext}
-                  disabled={currentIndex === spreads.length - 1}
-                  variant="outline"
-                  size="sm"
-                  className="gap-1 bg-transparent"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </Button>
-              </>
-            )}
-            {spreadHtml && (
-              <Button onClick={handleCopy} variant="outline" size="sm" className="gap-2 bg-transparent">
-                {copied ? (
-                  <>
-                    <Check className="w-4 h-4" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-4 h-4" />
-                    Copy
-                  </>
-                )}
-              </Button>
-            )}
-          </div>
+          {spreadHtml && (
+            <Button onClick={handleCopy} variant="outline" size="sm" className="gap-2 bg-transparent">
+              {copied ? (
+                <>
+                  <Check className="w-4 h-4" />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy className="w-4 h-4" />
+                  Copy
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 
       {/* Spread Content */}
-      <div className="flex-1 overflow-y-auto px-6 py-6">
+      <div className="flex-1 overflow-y-auto px-6 py-6 relative">
+        {spreadHtml && spreads.length > 1 && (
+          <div className="sticky top-0 z-20 flex items-center justify-center gap-4 mb-6 pb-4">
+            <Button
+              onClick={onPrevious}
+              disabled={currentIndex === 0}
+              variant="outline"
+              size="sm"
+              className="gap-1 bg-background/95 backdrop-blur-sm shadow-lg hover:bg-background"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Prev
+            </Button>
+            <span className="text-sm text-muted-foreground font-medium px-3 py-1.5 rounded-md bg-background/95 backdrop-blur-sm shadow-lg border border-border">
+              {currentIndex + 1} of {spreads.length} readings
+            </span>
+            <Button
+              onClick={onNext}
+              disabled={currentIndex === spreads.length - 1}
+              variant="outline"
+              size="sm"
+              className="gap-1 bg-background/95 backdrop-blur-sm shadow-lg hover:bg-background"
+            >
+              Next
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+
         {!spreadHtml ? (
           <div className="h-full flex flex-col items-center justify-center text-center relative">
             <div className="absolute inset-0 flex items-center justify-center opacity-40 brightness-125">
