@@ -6,9 +6,15 @@ import { addMessage } from "@/app/api/messages/[sessionId]/route"
 export async function POST(request: Request) {
   try {
     const body = await request.json()
+
+    console.log("[v0 Server] Push request received - Full body:", JSON.stringify(body, null, 2))
+
     const { sessionId, text, spread_html } = body
 
-    console.log("[v0 Server] Push request received for session:", sessionId)
+    console.log("[v0 Server] Extracted values:")
+    console.log("  - sessionId:", sessionId)
+    console.log("  - text:", text ? `${text.substring(0, 100)}...` : "undefined")
+    console.log("  - spread_html:", spread_html ? `${spread_html.substring(0, 100)}...` : "undefined")
 
     if (!sessionId) {
       return NextResponse.json({ error: "sessionId is required" }, { status: 400 })

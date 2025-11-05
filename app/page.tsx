@@ -48,11 +48,20 @@ export default function TarotApp() {
 
         const data = await response.json()
 
+        console.log("[v0] Polled messages:", data.messages?.length || 0, "messages")
+
         if (data.messages && Array.isArray(data.messages)) {
           data.messages.forEach((message: any) => {
             // Only process each message once
             if (!lastProcessedIdRef.current.has(message.id)) {
               lastProcessedIdRef.current.add(message.id)
+
+              console.log("[v0] Processing message:", {
+                id: message.id,
+                hasText: !!message.text,
+                hasSpread: !!message.spread_html,
+                spreadLength: message.spread_html?.length || 0,
+              })
 
               // Handle chat messages
               if (message.text) {
@@ -68,6 +77,7 @@ export default function TarotApp() {
 
               // Handle spread HTML
               if (message.spread_html) {
+                console.log("[v0] Setting spread HTML, length:", message.spread_html.length)
                 setSpreadHtml(message.spread_html)
               }
             }
