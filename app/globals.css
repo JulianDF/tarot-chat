@@ -275,21 +275,22 @@
   position: relative;
 }
 
+/* Adding !important to override inline styles from n8n */
 /* Style all images (tarot cards) within the spread */
 .spread-content img {
-  border: 1px solid rgba(191, 139, 255, 0.2);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 0 20px rgba(191, 139, 255, 0.15);
-  transition: all 0.3s ease;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 4px;
+  border: 1px solid rgba(191, 139, 255, 0.2) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 0 20px rgba(191, 139, 255, 0.15) !important;
+  transition: all 0.3s ease !important;
+  background: rgba(0, 0, 0, 0.2) !important;
+  padding: 4px !important;
 }
 
 /* Add hover effect for card images */
 .spread-content img:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3), 0 0 30px rgba(191, 139, 255, 0.3);
-  border-color: rgba(191, 139, 255, 0.4);
+  transform: translateY(-4px) scale(1.02) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 0 30px rgba(191, 139, 255, 0.3) !important;
+  border-color: rgba(191, 139, 255, 0.4) !important;
 }
 
 /* Style the spread container divs */

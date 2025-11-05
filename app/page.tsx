@@ -7,7 +7,9 @@ import SpreadViewer from "@/components/spread-viewer"
 
 export default function TarotApp() {
   const [sessionId, setSessionId] = useState<string>("")
-  const [chatMessages, setChatMessages] = useState<Array<{ id: string; text: string; timestamp: number }>>([])
+  const [chatMessages, setChatMessages] = useState<
+    Array<{ id: string; text: string; timestamp: number; role: "user" | "agent" }>
+  >([])
   const [spreadHtml, setSpreadHtml] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
@@ -59,19 +61,22 @@ export default function TarotApp() {
             }
           }
 
-          // Collect all text messages
-          const textMessages = data.messages
+          const agentMessages = data.messages
             .filter((m: any) => m.text)
             .map((m: any) => ({
               id: m.id,
               text: m.text,
               timestamp: m.timestamp,
+              role: "agent" as const,
             }))
 
-          // Update chat messages if different
-          if (JSON.stringify(textMessages) !== JSON.stringify(chatMessages)) {
-            setChatMessages(textMessages)
-          }
+          setChatMessages((prev) => {
+            const userMessages = prev.filter((m) => m.role === "user")
+            const allMessages = [...userMessages, ...agentMessages]
+            // Sort by timestamp to maintain order
+            allMessages.sort((a, b) => a.timestamp - b.timestamp)
+            return allMessages
+          })
         }
       } catch (error) {
         console.error("[v0] Polling error:", error)
@@ -99,8 +104,9 @@ export default function TarotApp() {
       ...prev,
       {
         id: userMessageId,
-        text: `<div class="text-foreground/90">${question}</div>`,
+        text: question,
         timestamp: Date.now(),
+        role: "user",
       },
     ])
 
@@ -128,8 +134,9 @@ export default function TarotApp() {
         ...prev,
         {
           id: uuidv4(),
-          text: '<div class="text-red-400">Failed to send message. Please try again.</div>',
+          text: "Failed to send message. Please try again.",
           timestamp: Date.now(),
+          role: "agent",
         },
       ])
     } finally {

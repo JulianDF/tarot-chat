@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
 import { Sparkles, Plus, Send } from "lucide-react"
 
@@ -12,6 +12,7 @@ interface Message {
   id: string
   text: string
   timestamp: number
+  role: "user" | "agent"
 }
 
 interface ChatInterfaceProps {
@@ -47,6 +48,16 @@ export default function ChatInterface({ messages, isLoading, onSendMessage, onNe
     if (input.trim()) {
       onSendMessage(input)
       setInput("")
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault()
+      if (input.trim()) {
+        onSendMessage(input)
+        setInput("")
+      }
     }
   }
 
@@ -92,15 +103,26 @@ export default function ChatInterface({ messages, isLoading, onSendMessage, onNe
           <>
             {messages.map((message) => (
               <div key={message.id} className="animate-fade-in">
-                <Card className="bg-card/60 backdrop-blur-sm border-border/50 p-4">
-                  <div
-                    className="text-foreground formatted-content"
-                    dangerouslySetInnerHTML={{ __html: message.text }}
-                  />
-                  <p className="text-xs text-muted-foreground mt-2">
-                    {new Date(message.timestamp).toLocaleTimeString()}
-                  </p>
-                </Card>
+                {message.role === "user" ? (
+                  <div className="flex justify-end">
+                    <Card className="bg-primary/20 backdrop-blur-sm border-primary/30 p-4 max-w-[80%]">
+                      <div className="text-foreground">{message.text}</div>
+                      <p className="text-xs text-muted-foreground mt-2 text-right">
+                        {new Date(message.timestamp).toLocaleTimeString()}
+                      </p>
+                    </Card>
+                  </div>
+                ) : (
+                  <Card className="bg-card/60 backdrop-blur-sm border-border/50 p-4">
+                    <div
+                      className="text-foreground formatted-content"
+                      dangerouslySetInnerHTML={{ __html: message.text }}
+                    />
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {new Date(message.timestamp).toLocaleTimeString()}
+                    </p>
+                  </Card>
+                )}
               </div>
             ))}
             {isLoading && (
@@ -118,13 +140,14 @@ export default function ChatInterface({ messages, isLoading, onSendMessage, onNe
       {/* Input Area */}
       <div className="border-t border-border bg-card/40 backdrop-blur-sm px-6 py-4">
         <form onSubmit={handleSubmit} className="flex gap-3">
-          <Input
-            type="text"
+          <Textarea
             placeholder="Ask the cards..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
+            onKeyDown={handleKeyDown}
             disabled={isLoading}
-            className="bg-input border-border text-foreground placeholder-muted-foreground"
+            className="bg-input border-border text-foreground placeholder-muted-foreground min-h-[44px] max-h-[200px] resize-none"
+            rows={1}
           />
           <Button
             type="submit"
