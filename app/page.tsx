@@ -46,66 +46,86 @@ export default function TarotApp() {
       eventSourceRef.current.close()
     }
 
+    const sseUrl = `/api/events/${sessionId}`
+    console.log("[v0] SSE URL:", sseUrl)
+
     // Create new SSE connection
-    const eventSource = new EventSource(`/api/events/${sessionId}`)
-    eventSourceRef.current = eventSource
+    try {
+      const eventSource = new EventSource(sseUrl)
+      eventSourceRef.current = eventSource
 
-    eventSource.onopen = () => {
-      console.log("[v0] SSE connection opened")
-    }
-
-    eventSource.onmessage = (event) => {
-      console.log("[v0] SSE message received:", event.data)
-
-      try {
-        const data = JSON.parse(event.data)
-
-        // Handle status messages
-        if (data.status === "connected") {
-          console.log("[v0] SSE connected successfully")
-          return
-        }
-
-        // Generate unique ID for deduplication
-        const messageId = data.id || uuidv4()
-
-        // Only process each message once
-        if (!lastProcessedIdRef.current.has(messageId)) {
-          lastProcessedIdRef.current.add(messageId)
-
-          // Handle chat messages
-          if (data.text) {
-            setChatMessages((prev) => [
-              ...prev,
-              {
-                id: messageId,
-                text: data.text,
-                timestamp: Date.now(),
-              },
-            ])
-          }
-
-          // Handle spread HTML
-          if (data.spread_html) {
-            setSpreadHtml(data.spread_html)
-          }
-        }
-      } catch (error) {
-        console.error("[v0] Error parsing SSE message:", error)
+      eventSource.onopen = () => {
+        console.log("[v0] SSE connection opened successfully")
       }
-    }
 
-    eventSource.onerror = (error) => {
-      console.error("[v0] SSE error:", error)
-      eventSource.close()
+      eventSource.onmessage = (event) => {
+        console.log("[v0] SSE message received:", event.data)
 
-      // Attempt to reconnect after 3 seconds
-      setTimeout(() => {
-        if (sessionId) {
-          console.log("[v0] Attempting to reconnect SSE...")
-          connectToSSE()
+        try {
+          const data = JSON.parse(event.data)
+
+          // Handle status messages
+          if (data.status === "connected") {
+            console.log("[v0] SSE connected successfully")
+            return
+          }
+
+          // Generate unique ID for deduplication
+          const messageId = data.id || uuidv4()
+
+          // Only process each message once
+          if (!lastProcessedIdRef.current.has(messageId)) {
+            lastProcessedIdRef.current.add(messageId)
+
+            // Handle chat messages
+            if (data.text) {
+              setChatMessages((prev) => [
+                ...prev,
+                {
+                  id: messageId,
+                  text: data.text,
+                  timestamp: Date.now(),
+                },
+              ])
+            }
+
+            // Handle spread HTML
+            if (data.spread_html) {
+              setSpreadHtml(data.spread_html)
+            }
+          }
+        } catch (error) {
+          console.error("[v0] Error parsing SSE message:", error)
         }
-      }, 3000)
+      }
+
+      eventSource.onerror = (error) => {
+        console.error("[v0] SSE error details:", {
+          readyState: eventSource.readyState,
+          url: sseUrl,
+          error: error,
+          errorType: error.type,
+          target: error.target,
+        })
+
+        // Check readyState to understand the error
+        if (eventSource.readyState === EventSource.CONNECTING) {
+          console.log("[v0] SSE is reconnecting...")
+        } else if (eventSource.readyState === EventSource.CLOSED) {
+          console.log("[v0] SSE connection closed")
+          eventSource.close()
+
+          // Attempt to reconnect after 3 seconds
+          setTimeout(() => {
+            if (sessionId) {
+              console.log("[v0] Attempting to reconnect SSE...")
+              connectToSSE()
+            }
+          }, 3000)
+        }
+      }
+    } catch (error) {
+      console.error("[v0] Error creating EventSource:", error)
     }
   }
 
