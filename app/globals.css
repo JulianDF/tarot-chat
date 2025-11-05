@@ -275,22 +275,25 @@
   position: relative;
 }
 
-/* Adding !important to override inline styles from n8n */
+/* Removed transform from hover to prevent spinning reversed cards */
 /* Style all images (tarot cards) within the spread */
 .spread-content img {
-  border: 1px solid rgba(191, 139, 255, 0.2) !important;
-  border-radius: 8px !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 0 20px rgba(191, 139, 255, 0.15) !important;
+  border: 2px solid rgba(191, 139, 255, 0.3) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 0 25px rgba(191, 139, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
   transition: all 0.3s ease !important;
-  background: rgba(0, 0, 0, 0.2) !important;
-  padding: 4px !important;
+  background: rgba(0, 0, 0, 0.3) !important;
+  padding: 6px !important;
+  filter: brightness(1) !important;
 }
 
-/* Add hover effect for card images */
+/* Use filter and box-shadow for hover instead of transform to avoid rotation conflicts */
 .spread-content img:hover {
-  transform: translateY(-4px) scale(1.02) !important;
-  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.3), 0 0 30px rgba(191, 139, 255, 0.3) !important;
-  border-color: rgba(191, 139, 255, 0.4) !important;
+  filter: brightness(1.1) !important;
+  box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 0 40px rgba(191, 139, 255, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(191, 139, 255, 0.5) !important;
 }
 
 /* Style the spread container divs */

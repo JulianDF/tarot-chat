@@ -74,7 +74,7 @@ export default function SpreadViewer({ spreadHtml, sessionId }: SpreadViewerProp
           </div>
         ) : (
           <div className="animate-fade-in">
-            <Card className="bg-gradient-to-br from-primary/5 via-background to-secondary/5 backdrop-blur-sm border-border/50 overflow-hidden shadow-xl">
+            <Card className="bg-gradient-to-br from-primary/10 via-card to-secondary/10 backdrop-blur-sm border-primary/20 overflow-hidden shadow-2xl">
               <div
                 className="spread-content prose prose-invert max-w-none p-8 [&_*]:max-w-full [&_img]:max-w-full [&_div]:max-w-full [&_table]:max-w-full"
                 dangerouslySetInnerHTML={{ __html: spreadHtml }}
