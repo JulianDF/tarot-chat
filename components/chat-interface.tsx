@@ -31,7 +31,15 @@ export default function ChatInterface({ messages, isLoading, onSendMessage, onNe
   }
 
   useEffect(() => {
-    scrollToBottom()
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    // Check if user is near the bottom (within 100px)
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100
+
+    if (isNearBottom) {
+      scrollToBottom()
+    }
   }, [messages])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -86,7 +94,7 @@ export default function ChatInterface({ messages, isLoading, onSendMessage, onNe
               <div key={message.id} className="animate-fade-in">
                 <Card className="bg-card/60 backdrop-blur-sm border-border/50 p-4">
                   <div
-                    className="text-foreground prose prose-invert max-w-none"
+                    className="text-foreground formatted-content"
                     dangerouslySetInnerHTML={{ __html: message.text }}
                   />
                   <p className="text-xs text-muted-foreground mt-2">

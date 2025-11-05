@@ -199,3 +199,105 @@
 .animate-glow {
   animation: glow 3s ease-in-out infinite;
 }
+
+/* Add styles for formatted HTML content in chat messages */
+.formatted-content {
+  line-height: 1.6;
+}
+
+.formatted-content h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  margin-top: 1.5rem;
+  color: var(--primary);
+  font-family: var(--font-serif);
+}
+
+.formatted-content h1:first-child {
+  margin-top: 0;
+}
+
+.formatted-content h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  margin-top: 1.5rem;
+  color: var(--foreground);
+  font-family: var(--font-serif);
+}
+
+.formatted-content h3 {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  margin-top: 1.25rem;
+  color: var(--secondary);
+}
+
+.formatted-content p {
+  margin-bottom: 0.75rem;
+  color: var(--foreground);
+}
+
+.formatted-content b,
+.formatted-content strong {
+  font-weight: 600;
+  color: var(--primary-foreground);
+}
+
+.formatted-content i,
+.formatted-content em {
+  font-style: italic;
+  color: var(--accent);
+}
+
+.formatted-content ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.formatted-content li {
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+}
+
+.formatted-content ul ul {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Add elegant styling for tarot card spread */
+/* Styles for the spread viewer content */
+.spread-content {
+  position: relative;
+}
+
+/* Style all images (tarot cards) within the spread */
+.spread-content img {
+  border: 1px solid rgba(191, 139, 255, 0.2);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2), 0 0 20px rgba(191, 139, 255, 0.15);
+  transition: all 0.3s ease;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+}
+
+/* Add hover effect for card images */
+.spread-content img:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3), 0 0 30px rgba(191, 139, 255, 0.3);
+  border-color: rgba(191, 139, 255, 0.4);
+}
+
+/* Style the spread container divs */
+.spread-content > div {
+  background: transparent;
+}
+
+/* Add subtle styling to any text within the spread */
+.spread-content * {
+  color: var(--foreground);
+}
