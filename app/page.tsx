@@ -10,7 +10,7 @@ export default function TarotApp() {
   const [chatMessages, setChatMessages] = useState<Array<{ id: string; text: string; timestamp: number }>>([])
   const [spreadHtml, setSpreadHtml] = useState<string>("")
   const [isLoading, setIsLoading] = useState(false)
-  const eventSourceRef = useRef<EventSource | null>(null)
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
   const lastProcessedIdRef = useRef<Set<string>>(new Set())
 
   // Initialize session
@@ -20,13 +20,11 @@ export default function TarotApp() {
 
   useEffect(() => {
     if (sessionId) {
-      connectToSSE()
+      startPolling()
     }
 
     return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close()
-      }
+      stopPolling()
     }
   }, [sessionId])
 
@@ -38,94 +36,57 @@ export default function TarotApp() {
     lastProcessedIdRef.current.clear()
   }
 
-  const connectToSSE = () => {
-    console.log("[v0] Connecting to SSE for session:", sessionId)
+  const startPolling = () => {
+    console.log("[v0] Starting polling for session:", sessionId)
 
-    // Close existing connection if any
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close()
+    stopPolling() // Clear any existing interval
+
+    const poll = async () => {
+      try {
+        const response = await fetch(`/api/messages/${sessionId}`)
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`)
+
+        const data = await response.json()
+
+        if (data.messages && Array.isArray(data.messages)) {
+          data.messages.forEach((message: any) => {
+            // Only process each message once
+            if (!lastProcessedIdRef.current.has(message.id)) {
+              lastProcessedIdRef.current.add(message.id)
+
+              // Handle chat messages
+              if (message.text) {
+                setChatMessages((prev) => [
+                  ...prev,
+                  {
+                    id: message.id,
+                    text: message.text,
+                    timestamp: message.timestamp,
+                  },
+                ])
+              }
+
+              // Handle spread HTML
+              if (message.spread_html) {
+                setSpreadHtml(message.spread_html)
+              }
+            }
+          })
+        }
+      } catch (error) {
+        console.error("[v0] Polling error:", error)
+      }
     }
 
-    const sseUrl = `/api/events/${sessionId}`
-    console.log("[v0] SSE URL:", sseUrl)
+    // Poll immediately, then every second
+    poll()
+    pollingIntervalRef.current = setInterval(poll, 1000)
+  }
 
-    // Create new SSE connection
-    try {
-      const eventSource = new EventSource(sseUrl)
-      eventSourceRef.current = eventSource
-
-      eventSource.onopen = () => {
-        console.log("[v0] SSE connection opened successfully")
-      }
-
-      eventSource.onmessage = (event) => {
-        console.log("[v0] SSE message received:", event.data)
-
-        try {
-          const data = JSON.parse(event.data)
-
-          // Handle status messages
-          if (data.status === "connected") {
-            console.log("[v0] SSE connected successfully")
-            return
-          }
-
-          // Generate unique ID for deduplication
-          const messageId = data.id || uuidv4()
-
-          // Only process each message once
-          if (!lastProcessedIdRef.current.has(messageId)) {
-            lastProcessedIdRef.current.add(messageId)
-
-            // Handle chat messages
-            if (data.text) {
-              setChatMessages((prev) => [
-                ...prev,
-                {
-                  id: messageId,
-                  text: data.text,
-                  timestamp: Date.now(),
-                },
-              ])
-            }
-
-            // Handle spread HTML
-            if (data.spread_html) {
-              setSpreadHtml(data.spread_html)
-            }
-          }
-        } catch (error) {
-          console.error("[v0] Error parsing SSE message:", error)
-        }
-      }
-
-      eventSource.onerror = (error) => {
-        console.error("[v0] SSE error details:", {
-          readyState: eventSource.readyState,
-          url: sseUrl,
-          error: error,
-          errorType: error.type,
-          target: error.target,
-        })
-
-        // Check readyState to understand the error
-        if (eventSource.readyState === EventSource.CONNECTING) {
-          console.log("[v0] SSE is reconnecting...")
-        } else if (eventSource.readyState === EventSource.CLOSED) {
-          console.log("[v0] SSE connection closed")
-          eventSource.close()
-
-          // Attempt to reconnect after 3 seconds
-          setTimeout(() => {
-            if (sessionId) {
-              console.log("[v0] Attempting to reconnect SSE...")
-              connectToSSE()
-            }
-          }, 3000)
-        }
-      }
-    } catch (error) {
-      console.error("[v0] Error creating EventSource:", error)
+  const stopPolling = () => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current)
+      pollingIntervalRef.current = null
     }
   }
 
@@ -174,10 +135,7 @@ export default function TarotApp() {
   }
 
   const handleNewReading = () => {
-    // Close existing SSE connection
-    if (eventSourceRef.current) {
-      eventSourceRef.current.close()
-    }
+    stopPolling()
     initializeSession()
   }
 
