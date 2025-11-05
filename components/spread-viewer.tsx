@@ -1,17 +1,46 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
-import { Sparkles, Copy, Check } from "lucide-react"
+import { Sparkles, Copy, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+type Spread = {
+  id: string
+  html: string
+  timestamp: number
+}
+
 interface SpreadViewerProps {
-  spreadHtml: string
+  spreads: Spread[]
+  currentIndex: number
+  onPrevious: () => void
+  onNext: () => void
   sessionId: string
 }
 
-export default function SpreadViewer({ spreadHtml, sessionId }: SpreadViewerProps) {
+export default function SpreadViewer({ spreads, currentIndex, onPrevious, onNext, sessionId }: SpreadViewerProps) {
   const [copied, setCopied] = useState(false)
+
+  const currentSpread = spreads[currentIndex]
+  const spreadHtml = currentSpread?.html || ""
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (spreads.length <= 1) return
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault()
+        onPrevious()
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault()
+        onNext()
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [spreads.length, onPrevious, onNext])
 
   const handleCopy = async () => {
     if (spreadHtml) {
@@ -32,24 +61,54 @@ export default function SpreadViewer({ spreadHtml, sessionId }: SpreadViewerProp
             </div>
             <div>
               <h2 className="text-lg font-serif font-semibold">Reading Spread</h2>
-              <p className="text-sm text-muted-foreground">Card layout & interpretation</p>
+              <p className="text-sm text-muted-foreground">
+                {spreads.length > 0
+                  ? `${currentIndex + 1} of ${spreads.length} ${spreads.length === 1 ? "reading" : "readings"}`
+                  : "Card layout & interpretation"}
+              </p>
             </div>
           </div>
-          {spreadHtml && (
-            <Button onClick={handleCopy} variant="outline" size="sm" className="gap-2 bg-transparent">
-              {copied ? (
-                <>
-                  <Check className="w-4 h-4" />
-                  Copied
-                </>
-              ) : (
-                <>
-                  <Copy className="w-4 h-4" />
-                  Copy
-                </>
-              )}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {spreads.length > 1 && (
+              <>
+                <Button
+                  onClick={onPrevious}
+                  disabled={currentIndex === 0}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 bg-transparent"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Prev
+                </Button>
+                <Button
+                  onClick={onNext}
+                  disabled={currentIndex === spreads.length - 1}
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 bg-transparent"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+              </>
+            )}
+            {spreadHtml && (
+              <Button onClick={handleCopy} variant="outline" size="sm" className="gap-2 bg-transparent">
+                {copied ? (
+                  <>
+                    <Check className="w-4 h-4" />
+                    Copied
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4" />
+                    Copy
+                  </>
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -74,9 +133,11 @@ export default function SpreadViewer({ spreadHtml, sessionId }: SpreadViewerProp
           </div>
         ) : (
           <div className="animate-fade-in">
-            <Card className="bg-gradient-to-br from-primary/10 via-card to-secondary/10 backdrop-blur-sm border-primary/20 overflow-hidden shadow-2xl">
+            <Card className="bg-gradient-to-br from-primary/20 via-primary/5 to-secondary/20 backdrop-blur-sm border-primary/30 overflow-hidden shadow-2xl relative">
+              {/* Radial glow effect behind cards */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-primary/15 via-transparent to-transparent pointer-events-none" />
               <div
-                className="spread-content prose prose-invert max-w-none p-8 [&_*]:max-w-full [&_img]:max-w-full [&_div]:max-w-full [&_table]:max-w-full"
+                className="spread-content prose prose-invert max-w-none p-8 [&_*]:max-w-full [&_img]:max-w-full [&_div]:max-w-full [&_table]:max-w-full relative z-10"
                 dangerouslySetInnerHTML={{ __html: spreadHtml }}
               />
             </Card>

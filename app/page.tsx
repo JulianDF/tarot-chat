@@ -5,12 +5,19 @@ import { v4 as uuidv4 } from "uuid"
 import ChatInterface from "@/components/chat-interface"
 import SpreadViewer from "@/components/spread-viewer"
 
+type Spread = {
+  id: string
+  html: string
+  timestamp: number
+}
+
 export default function TarotApp() {
   const [sessionId, setSessionId] = useState<string>("")
   const [chatMessages, setChatMessages] = useState<
     Array<{ id: string; text: string; timestamp: number; role: "user" | "agent" }>
   >([])
-  const [spreadHtml, setSpreadHtml] = useState<string>("")
+  const [spreads, setSpreads] = useState<Spread[]>([])
+  const [currentSpreadIndex, setCurrentSpreadIndex] = useState<number>(0)
   const [isLoading, setIsLoading] = useState(false)
   const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
@@ -33,7 +40,9 @@ export default function TarotApp() {
     const newSessionId = uuidv4()
     setSessionId(newSessionId)
     setChatMessages([])
-    setSpreadHtml("")
+    setSpreads([]) // Explicitly clear spreads gallery when starting new reading
+    setCurrentSpreadIndex(0)
+    console.log("[v0] New reading started - gallery cleared")
   }
 
   const startPolling = () => {
@@ -51,14 +60,27 @@ export default function TarotApp() {
         console.log("[v0] Polled messages:", data.messages?.length || 0, "messages")
 
         if (data.messages && Array.isArray(data.messages)) {
-          // Find the most recent spread_html
           const messagesWithSpread = data.messages.filter((m: any) => m.spread_html)
           if (messagesWithSpread.length > 0) {
             const latestSpread = messagesWithSpread[messagesWithSpread.length - 1]
-            if (latestSpread.spread_html !== spreadHtml) {
-              console.log("[v0] Setting spread HTML, length:", latestSpread.spread_html.length)
-              setSpreadHtml(latestSpread.spread_html)
-            }
+
+            // Check if this spread is already in our gallery
+            setSpreads((prev) => {
+              const exists = prev.some((s) => s.html === latestSpread.spread_html)
+              if (!exists) {
+                console.log("[v0] Adding new spread to gallery, length:", latestSpread.spread_html.length)
+                const newSpread: Spread = {
+                  id: latestSpread.id,
+                  html: latestSpread.spread_html,
+                  timestamp: latestSpread.timestamp,
+                }
+                const newSpreads = [...prev, newSpread]
+                // Set current index to the newest spread
+                setCurrentSpreadIndex(newSpreads.length - 1)
+                return newSpreads
+              }
+              return prev
+            })
           }
 
           const agentMessages = data.messages
@@ -149,6 +171,14 @@ export default function TarotApp() {
     initializeSession()
   }
 
+  const handlePreviousSpread = () => {
+    setCurrentSpreadIndex((prev) => Math.max(0, prev - 1))
+  }
+
+  const handleNextSpread = () => {
+    setCurrentSpreadIndex((prev) => Math.min(spreads.length - 1, prev + 1))
+  }
+
   return (
     <main className="h-screen w-full bg-gradient-to-br from-background via-background to-primary/5 flex flex-col lg:flex-row overflow-hidden">
       <div className="flex-1 flex flex-col border-b lg:border-b-0 lg:border-r border-border overflow-hidden">
@@ -161,7 +191,13 @@ export default function TarotApp() {
       </div>
 
       <div className="flex-1 flex flex-col border-t lg:border-t-0 lg:border-l border-border bg-card/30 backdrop-blur-sm overflow-hidden">
-        <SpreadViewer spreadHtml={spreadHtml} sessionId={sessionId} />
+        <SpreadViewer
+          spreads={spreads}
+          currentIndex={currentSpreadIndex}
+          onPrevious={handlePreviousSpread}
+          onNext={handleNextSpread}
+          sessionId={sessionId}
+        />
       </div>
     </main>
   )
